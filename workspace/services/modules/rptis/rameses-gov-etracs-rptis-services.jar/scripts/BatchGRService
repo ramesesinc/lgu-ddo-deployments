@@ -210,7 +210,16 @@ public class BatchGRService
 
     @ProxyMethod
     public def getItems(entity) {
-        return em_batchgr_item.find([parent_objid: entity.objid])
+        def findby = [parent_objid: entity.objid];
+        
+        if (entity._query) {
+            def query = entity._query;
+            if (query.landpin) findby.pin = query.landpin.pin;
+            if (query.rputype) findby.rputype = query.rputype;
+            if (query.state) findby.state = query.state;
+        }
+
+        return em_batchgr_item.find(findby)
                 .orderBy('pin,suffix,subsuffix')
                 .list()
     }
@@ -331,8 +340,23 @@ public class BatchGRService
 
     @ProxyMethod
     public def getCounts(entity){
-        def cnt = em_batchgr.findCounts(entity)
+        def findby = [:];
+        findby.objid = entity.objid;
+        findby.pin = '%'
+        findby.rputype = '%'
+        findby.state = '%'
+        
+        if (entity._query) {
+            def query = entity._query;
+            if (query.landpin) findby.pin = query.landpin.pin;
+            if (query.rputype) findby.rputype = query.rputype;
+            if (query.state) findby.state = query.state;
+        }
+
+        def cnt = em_batchgr.findCounts(findby)
         if (cnt.count == null) {
+            cnt.land = 0
+            cnt.improvement = 0
             cnt.count = 0
             cnt.revised = 0
             cnt.currentcnt = 0

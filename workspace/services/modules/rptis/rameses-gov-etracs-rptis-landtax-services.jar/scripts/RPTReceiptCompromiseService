@@ -59,8 +59,8 @@ class RPTReceiptCompromiseService
 	@DataContext('rptpayment_item')
 	def em_rptpayment_item
 
-	@DataContext('rptpayment_share')
-	def em_rptpayment_share
+	@DataContext('cashreceipt_rpt_share_forposting')
+	def em_cashreceipt_forposting
 
 
 
@@ -149,7 +149,7 @@ class RPTReceiptCompromiseService
 	* 	  - credits
 	*====================================================*/
 	@ProxyMethod
-	public void buildPostingItems(receipt){
+	public def buildPostingItems(receipt){
 		def rptledger = em_rptledger.find([objid:receipt.compromise.rptledgerid]).first() 
 		if (!rptledger) throw new Exception('Ledger does not exist or has already been deleted.')
 
@@ -177,6 +177,13 @@ class RPTReceiptCompromiseService
 			item.discount = numSvc.roundA(it.discount, 4)
 			receipt.items << item
 		}
+		return receipt 
+	}
+
+	@ProxyMethod
+	public def getReceiptItems(receipt){
+		def rct = buildPostingItems(receipt)
+		return rct.items
 	}
 
 
@@ -357,22 +364,15 @@ class RPTReceiptCompromiseService
 		em_compromise_credit.create(credit)
 	}
 
-	void postPaymentShares(receipt, pmt){
-		receipt.bill.rptledger.shares.each{
-			def share = createShare(pmt, it)
-			share.item = it.payableitem
-			em_rptpayment_share.create(share)
-		}
-
-		if (!receipt.bill.billitems) 
-			throw new Exception('billitems are expected.')
-
-		receipt.bill.billitems.each{
-			def share = createShare(pmt, it)
-			share.amount = it.amount - it.share 
-			share.discount = it.discount - it.sharedisc 
-			em_rptpayment_share.create(share)
-		}
+	void createForPostingShareEntry(receipt) {
+		def ledger = receipt.bill.rptledger;
+		em_cashreceipt_forposting.create([
+			objid: 'FP' + new java.rmi.server.UID(),
+			receiptid: receipt.objid, 
+			rptledgerid: ledger.objid, 
+			txndate: receipt.txndate,
+			error: 0
+		])
 	}
 
 	def createShare(pmt, share){
@@ -421,7 +421,7 @@ class RPTReceiptCompromiseService
 		pmt.voided = false
 		em_rptpayment.create(pmt)
 		postPaymentItems(receipt, pmt)
-		postPaymentShares(receipt, pmt)
+		createForPostingShareEntry(receipt)
 		return pmt 
 	}
 
@@ -494,12 +494,13 @@ class RPTReceiptCompromiseService
 		def items = em_rptpayment_item.find([parentid:pmt.objid]).list()
 		items.each{
 			def item = [:]
-			item.parentid = pmt.rptledgerid
+			item.parentid = compromise.rptledgerid
 			item.rptledgerfaasid = it.rptledgerfaasid
-			item.basicav = it.ledgerfaas.assessedvalue
-			item.sefav = it.ledgerfaas.assessedvalue
-			item.av = it.ledgerfaas.assessedvalue
-			item.revtype it.revtype 
+			item.rptledgerfaas = it.rptledgerfaas
+			item.basicav = it.rptledgerfaas.assessedvalue
+			item.sefav = it.rptledgerfaas.assessedvalue
+			item.av = it.rptledgerfaas.assessedvalue
+			item.revtype = it.revtype 
 			item.year = it.year 
 			item.amount = it.amount 
 			item.amtpaid = 0

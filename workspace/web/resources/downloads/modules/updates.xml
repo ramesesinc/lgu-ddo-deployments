@@ -1,7 +1,7 @@
 <app>
 <env>
 app.title=ETRACS 2.5 build 2.5.02.07.01 (PROVINCE OF DAVAO DE ORO)
-app.host=192.168.10.10:8071
+app.host=192.168.10.10:8070
 app.cluster=osiris3
 app.context=etracs25
 app.help=http://192.168.10.10:8080/help
@@ -74,14 +74,14 @@ entity.app.context=etracs25
 	<module version="2.51" file="treasury/rameses-gov-treasury-tool.jar" />
 
 	<!-- rptis -->
-	<module version="2.51" file="rptis/rameses-gov-etracs-rptis-landtax.jar" />
-	<module version="2.51" file="rptis/rameses-gov-etracs-rptis-landtax-report.jar" />
-	<module version="2.51" file="rptis/rameses-gov-etracs-rptis.jar" />
-	<module version="2.51" file="rptis/rameses-gov-etracs-rptis-report.jar" />
-	<module version="2.51" file="rptis/rameses-gov-etracs-rptis-transmittal.jar" />
-	<module version="2.51" file="rptis/rameses-gov-etracs-rptis-province.jar" />
-	<module version="2.51" file="rptis/rameses-gov-etracs-rptis-landtax-province.jar" />
-	<module version="2.52" file="rptis/rameses-gov-etracs-rptis-sync2.jar" />
+	<module version="2.53" file="rptis/rameses-gov-etracs-rptis-landtax.jar" />
+	<module version="2.53" file="rptis/rameses-gov-etracs-rptis-landtax-report.jar" />
+	<module version="2.53" file="rptis/rameses-gov-etracs-rptis.jar" />
+	<module version="2.53" file="rptis/rameses-gov-etracs-rptis-report.jar" />
+	<module version="2.53" file="rptis/rameses-gov-etracs-rptis-transmittal.jar" />
+	<module version="2.53" file="rptis/rameses-gov-etracs-rptis-province.jar" />
+	<module version="2.53" file="rptis/rameses-gov-etracs-rptis-landtax-province.jar" />
+	<module version="2.53" file="rptis/rameses-gov-etracs-rptis-sync2.jar" />
 	
 	<!-- queue -->
 	<module version="2.51" file="queue/rameses-queueing.jar" />

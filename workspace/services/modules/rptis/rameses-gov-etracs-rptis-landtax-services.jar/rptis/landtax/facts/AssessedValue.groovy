@@ -4,11 +4,14 @@ public class AssessedValue
 {
     String objid
     Classification classification 
-    Classification actualuse 
+    ActualUse actualuse 
     String rputype
     String txntype 
     Integer year
+    Integer fromqtr
+    Integer toqtr
     Double av
+    Double mv
     Double basicav
     Double sefav
     Boolean taxdifference 
@@ -23,7 +26,10 @@ public class AssessedValue
         this.rputype = item.rputype 
         this.txntype = item.txntype 
         this.year = item.year
+        this.fromqtr = item.fromqtr
+        this.toqtr = item.toqtr
         this.av = item.av
+        this.mv = item.mv
         this.basicav = item.basicav
         this.sefav = item.sefav
         this.taxdifference = (item.taxdifference ? item.taxdifference : false)

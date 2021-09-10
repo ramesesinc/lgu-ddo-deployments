@@ -61,6 +61,19 @@ class RPTReceiptService
 	@DataContext('cashreceipt_rpt_share_forposting')
 	def em_cashreceipt_forposting
 
+    @DataContext('sys_org')
+    def em_org
+
+    @DataContext("city")
+    def em_city
+
+    @DataContext("province")
+    def em_prov
+
+    @DataContext("municipality")
+    def em_muni
+
+
 	@ProxyMethod
 	public def create(receipt) {
 		validateTotals(receipt)
@@ -306,7 +319,7 @@ class RPTReceiptService
 	}
 
 	@ProxyMethod
-	public void formatReceiptForPrinting(receipt){
+	public def formatReceiptForPrinting(receipt){
 		receipt._items = em.getItemsForPrinting(receipt)
 		receipt.owners = receipt._items.owner?.name.unique().join(";")
 		util.buildPeriodCovered(receipt._items)
@@ -315,6 +328,7 @@ class RPTReceiptService
 			addLGUInfo(receipt)
 		}
 		receipt.remove('ledgers')
+		return receipt
 	}
 
 
@@ -333,27 +347,26 @@ class RPTReceiptService
 
 	@ProxyMethod
 	public void addLGUInfo( receipt ) {
-		def lgutype = env.ORGCLASS
-		if("province".equalsIgnoreCase(lgutype)) {
-			receipt.lguname = receipt._items.collect{[munidistrict: it.munidistrict]}.unique{it.munidistrict}*.munidistrict.join('/')
-			receipt.parentlguname = receipt._items[0].provcity 
-		} else if ("city".equalsIgnoreCase(lgutype)) { 
-			def i = receipt._items[0]
-			receipt.lguname = i.provcity  
-		} else {
-			def i = receipt._items[0]
-			receipt.lguname = i.munidistrict
-			receipt.parentlguname = i.provcity 
+		def lgu = em_city.find([root: 1]).first()
+        if (!lgu) lgu = em_prov.find([root: 1]).first()
+        if (!lgu) lgu = em_muni.find([root: 1]).first()
+        if (!lgu) throw new Exception("sys_org root lgu not specified.")
+
+        def org = em_org.find([objid: lgu.objid]).first()
+
+        def parentlgu = [:]
+        if (org.orgclass == "MUNICIPALITY") {
+			parentlgu = em_prov.find([objid: lgu.parentid]).first()
 		}
+
+        receipt.lguname = lgu.fullname
+        receipt.parentlguname = parentlgu.fullname
 	}
 
 	@ProxyMethod
 	public def getPaidLedgers(receipt) {
 		return em.getPaidLedgers(receipt)
 	}
-
-
-
 
 
 	/*======================================================
@@ -426,6 +439,9 @@ class RPTReceiptService
 			info.lastqtrpaid = ledger.toqtr 
 		}
 		em_rptledger.where('objid = :objid and lastyearpaid <= :lastyearpaid', info).update(info)
+		if (info.lastqtrpaid == 4) {
+			em_rptledger_item.find([parentid: info.objid, year: info.lastyearpaid]).delete();
+		}
 	}
 
 	def createLedgerPayment(receipt, ledger){
@@ -443,9 +459,9 @@ class RPTReceiptService
 			pmt.postedbytitle = receipt.collector.title 
 			pmt.dtposted = receipt.txndate 
 			pmt.fromyear = ledger.fromyear 
-			pmt.fromqtr = ledger.fromqtr 
+			pmt.fromqtr = ledger.fromqtr ? ledger.fromqtr : 1 
 			pmt.toyear = ledger.toyear 
-			pmt.toqtr = ledger.toqtr 
+			pmt.toqtr = ledger.toqtr ? ledger.toqtr : 4 
 			pmt.amount = ledger.total 
 			pmt.collectingagency = getCollectingAgency()
 			pmt.voided = false 

@@ -43,9 +43,6 @@ class FAASSyncDataService
 	@Service('RPTUtil')
 	def util
 
-	@DataContext('faas')
-	def em_faas
-
 	@DataContext('faas_task')
 	def em_task
 
@@ -60,6 +57,9 @@ class FAASSyncDataService
 
     @DataContext('rpu')
     def em_rpu
+
+	@DataContext('sys_org')
+    def em_org
 
 
 	def getActions(){
@@ -174,8 +174,7 @@ class FAASSyncDataService
 
     def checkTransactionIsLocal(faas) {
         def rootOrg = rptSync.getRootOrg()
-		def faasinfo = em_faas.select('originlguid').find([objid: faas.objid]).first();
-        return faasinfo?.originlguid == rootOrg.objid
+        return faas.originlguid == rootOrg.objid
     }
 
 
@@ -312,9 +311,10 @@ class FAASSyncDataService
 	--------------------------------------------------------*/
 	def postRemoteFaas = {syncdata ->
 		def remoteFaas = syncdata.data 
-
+		syncdata.remote = em_org.find([objid: remoteFaas.originlguid]).first();
+		if (!syncdata.remote) throw new Exception('originlguid or remote is not specified');
 		saveFaas(remoteFaas)
-
+		
 		if ('PROVINCE'.equalsIgnoreCase(syncdata.remote.orgclass)){
 			faasSvc.approveFaasByMunicipality(remoteFaas)
 		} else if ('MUNICIPALITY'.equalsIgnoreCase(syncdata.remote.orgclass)) {
@@ -390,6 +390,8 @@ class FAASSyncDataService
 	}
 
 	void saveFaas( faas ) {
+		faas._checkTxnRef = false;
+		
 		saveEntity(faas)
 
 		if (faasSvc.faasExist(faas)){

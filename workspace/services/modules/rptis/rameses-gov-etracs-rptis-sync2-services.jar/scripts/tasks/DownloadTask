@@ -45,7 +45,6 @@ class DownloadTask {
         mgmtSvc.rescheduleErrors();
     }
 
-
     void download(downloadinfo) {
         def reader = null;
         def syncdata = null;

@@ -14,12 +14,13 @@ ${orderby}
 [closePaidAvDifference]
 update rptledger_avdifference set 
 	paid = 1
-where not exists(
-	select * from rptledger_item 
-	where parentid = rptledger_avdifference.parent_objid
-	and year = rptledger_avdifference.year 
-	and taxdifference = 1 
-)
+where parent_objid = $P{refid}
+  and not exists(
+    select * from rptledger_item 
+    where parentid = rptledger_avdifference.parent_objid
+    and year = rptledger_avdifference.year 
+    and taxdifference = 1 
+  )
 
 
 [findLastPayment]
@@ -70,8 +71,10 @@ select
   rp.*,
   (select max(partialled) from rptpayment_item where parentid = rp.objid) as partialled
 from rptpayment rp 
+left join cashreceipt_void cv on rp.receiptid = cv.receiptid
 where refid = $P{objid}
 and voided = 0
+and cv.objid is null 
 order by rp.fromyear desc, rp.fromqtr desc, rp.receiptno desc
 
 

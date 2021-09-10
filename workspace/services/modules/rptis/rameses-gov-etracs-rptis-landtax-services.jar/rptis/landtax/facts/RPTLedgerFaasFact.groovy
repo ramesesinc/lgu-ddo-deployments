@@ -7,6 +7,8 @@ public class RPTLedgerFaasFact
 {
     String objid 
     String tdno
+    Classification classification 
+    ActualUse actualuse 
     String classificationid
     String actualuseid
     Integer fromyear
@@ -14,6 +16,8 @@ public class RPTLedgerFaasFact
     Integer toyear
     Integer toqtr
     Double assessedvalue
+    Boolean idleland
+    String txntype
 
     def entity
 
@@ -31,8 +35,12 @@ public class RPTLedgerFaasFact
         this.actualuseid = ledgerfaas.actualuse?.objid
         this.fromyear = ledgerfaas.fromyear;
         this.fromqtr = ledgerfaas.fromqtr;
-        this.toyear = ledgerfaas.toyear;
-        this.toqtr = ledgerfaas.toqtr;
+        this.toyear = ledgerfaas.toyear == 0 ?  9999 : ledgerfaas.toyear;
+        this.toqtr = ledgerfaas.toqtr == 0 ? 4 : ledgerfaas.toqtr;
         this.assessedvalue = ledgerfaas.assessedvalue;
+        this.classification = new Classification(ledgerfaas.classification);
+        this.actualuse = new ActualUse(ledgerfaas.actualuse);
+        this.idleland = (ledgerfaas.idleland ? ledgerfaas.idleland : false)
+        this.txntype = ledgerfaas.txntype?.objid
     }
 }
