@@ -16,8 +16,12 @@ ws.host=192.168.10.10:8060
 
 socketio.host=192.168.10.10:7080
 
-entity.app.host=192.168.10.10:8071
+entity.app.host=192.168.10.10:8070
 entity.app.context=etracs25
+
+rpt.app.host=192.168.10.10:8070
+rpt.app.context=etracs25
+
 </env>
 <modules>
 	<!-- custom -->
